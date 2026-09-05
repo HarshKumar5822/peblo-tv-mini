@@ -2,11 +2,11 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY viewer/package.json ./
+COPY viewer/package*.json ./
 RUN npm install
 
 COPY viewer/ ./
 
 EXPOSE 3000
 
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "dev", "--", "--host"]

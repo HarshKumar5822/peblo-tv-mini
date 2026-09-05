@@ -8,10 +8,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Install python dependencies
-COPY backend/pyproject.toml ./
 RUN pip install --no-cache-dir fastapi uvicorn sqlalchemy pydantic pydantic-settings pillow pytest httpx python-multipart psycopg2-binary
 
-COPY backend/ ./app/
+COPY backend/app ./app
 COPY seed_shows.json ./
 COPY reference.json ./
 COPY assets/ ./assets/
