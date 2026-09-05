@@ -13,7 +13,6 @@ RUN pip install --no-cache-dir fastapi uvicorn sqlalchemy pydantic pydantic-sett
 COPY backend/app ./app
 COPY seed_shows.json ./
 COPY reference.json ./
-COPY assets/ ./assets/
 
 EXPOSE 8000
 
