@@ -1,0 +1,12 @@
+.git
+.gitignore
+.env
+.pytest_cache
+**/node_modules
+**/dist
+**/build
+**/.venv
+storage/
+*.db
+*.sqlite3
+*.log
