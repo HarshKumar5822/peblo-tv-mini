@@ -54,32 +54,11 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build Backend Image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: backend/Dockerfile
-          push: false
-          tags: peblo-api:latest
-
-      - name: Build CMS Image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: cms/Dockerfile
-          push: false
-          tags: peblo-cms:latest
-
-      - name: Build Viewer Image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: viewer/Dockerfile
-          push: false
-          tags: peblo-viewer:latest
+      - name: Build Docker Container Images
+        run: |
+          docker build -t peblo-api:latest -f backend/Dockerfile .
+          docker build -t peblo-cms:latest -f cms/Dockerfile .
+          docker build -t peblo-viewer:latest -f viewer/Dockerfile .
 
   deploy:
     needs: build-containers
