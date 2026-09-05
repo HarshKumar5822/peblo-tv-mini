@@ -1,0 +1,100 @@
+name: Peblo TV Mini CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Backend Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install fastapi uvicorn sqlalchemy pydantic pydantic-settings pillow pytest httpx python-multipart
+
+      - name: Run Backend Pytest Suite
+        run: |
+          python -m pytest backend/tests -v
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build CMS Frontend
+        run: |
+          cd cms
+          npm ci || npm install
+          npm run build
+
+      - name: Build Viewer Frontend
+        run: |
+          cd viewer
+          npm ci || npm install
+          npm run build
+
+  build-containers:
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Backend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: backend/Dockerfile
+          push: false
+          tags: peblo-api:latest
+
+      - name: Build CMS Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: cms/Dockerfile
+          push: false
+          tags: peblo-cms:latest
+
+      - name: Build Viewer Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: viewer/Dockerfile
+          push: false
+          tags: peblo-viewer:latest
+
+  deploy:
+    needs: build-containers
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Simulated Deployment Strategy Explanation
+        run: |
+          echo "=========================================================================="
+          echo "PEBLO TV PRODUCTION DEPLOYMENT STEP"
+          echo "=========================================================================="
+          echo "1. Container Registry Push: Tag & push images to AWS ECR / Cloudflare Registry."
+          echo "2. Database Migration: Execute Alembic migration job against RDS PostgreSQL."
+          echo "3. API Rolling Update: Trigger zero-downtime rolling deployment on ECS / K8s."
+          echo "4. Frontend CDN Sync: Deploy static React builds to Cloudflare Pages / S3 CDN."
+          echo "5. Health Verification: Probe /health endpoint for 200 OK before routing traffic."
+          echo "=========================================================================="
